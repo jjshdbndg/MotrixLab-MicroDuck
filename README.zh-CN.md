@@ -1,151 +1,72 @@
-**语言**: [English](README.md) | [简体中文](README.zh-CN.md)
+# MotrixLab · MicroDuck 被动轮轮滑
 
-# MotrixLab
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
+![Simulation](https://img.shields.io/badge/Simulation-MotrixSim-6C5CE7)
+![License](https://img.shields.io/badge/license-Apache--2.0-green)
 
-![GitHub License](https://img.shields.io/github/license/Motphys/MotrixLab)
-![Python Version](https://img.shields.io/badge/python-3.10-blue)
+这是一个 MotrixLab 实验分支：让 MicroDuck 双足机器人使用被动轮完成交替蹬滑。环境重点关注“蹬地—离地—回收—重新接触”的周期奖励、平衡、航向控制和接触后的平滑恢复。
 
-`MotrixLab` 是一个基于 [MotrixSim](https://github.com/Motphys/motrixsim-docs) 仿真引擎的强化学习框架，专为机器人仿真和训练设计。该项目提供了一个完整的强化学习开发平台，集成了多种仿真环境和训练框架。
+**环境名：** `microduck-flat-tile-passive-rollers`
 
-## 项目概述
+**English:** [README.md](README.md)
 
-该项目分为两个核心部分：
+## 项目内容
 
--   **motrix_envs**: 基于 MotrixSim 构建的各种 RL 仿真环境，定义了 observation、action、reward。与具体的 RL 框架无关，目前支持 MotrixSim 的 CPU 后端
--   **motrix_rl**: 集成 RL 框架，并使用 motrix_envs 里的各种环境参数进行训练。目前支持 SKRL 框架（JAX/PyTorch）和 RSLRL 框架（PyTorch）的 PPO 算法
+| 模块 | 内容 |
+| --- | --- |
+| 仿真环境 | 轮滑机器人配置、场景 XML、观测与奖励函数 |
+| 训练接入 | RSLRL/PPO 任务接入与续训脚本 |
+| 评估验证 | 确定性评估脚本与专项回归测试 |
+| 示例模型 | `checkpoints/microduck_rollers/balanced_model_11600.pt` |
+| 设计说明 | [实现方案](docs/superpowers/specs/2026-09-09-microduck-passive-roller-design.md) |
 
-> 文档地址：https://motrixlab.readthedocs.io
-
-## 主要特性
-
--   **统一接口**: 提供简洁统一的强化学习训练和评估接口
--   **多框架支持**: 支持 SKRL (JAX/PyTorch) 和 RSLRL (PyTorch) 训练框架，可根据硬件环境灵活选择
--   **丰富环境**: 包含基础控制、运动、操作等多种机器人仿真环境
--   **高性能仿真**: 基于 MotrixSim 的高性能物理仿真引擎
--   **可视化训练**: 支持实时渲染和训练过程可视化
-
-## MicroDuck 被动轮轮滑
-
-本分支新增了纯仿真的 MicroDuck 被动轮轮滑环境，包含双脚交替蹬滑、完整的“蹬地—离地—回收—重新接触”周期奖励、动作平滑、航向约束、续训工具和确定性评估。仓库同时附带一个经过长训筛选的示例模型。
-
-环境名：`microduck-flat-tile-passive-rollers`
-
-小白可直接参照 [MicroDuck 轮滑使用说明](MICRODUCK_ROLLERS.zh-CN.md) 安装、观看、评估和继续训练。
-
-## 🚀 快速开始
-
-> 以下示例使用了 Python 项目管理工具：[UV](https://docs.astral.sh/uv/)
->
-> 在开始之前，请先[安装](https://docs.astral.sh/uv/getting-started/installation/)该工具。
-
-### 克隆仓库
+## 快速开始
 
 ```bash
-git clone https://github.com/Motphys/MotrixLab
-
-cd MotrixLab
-
+git clone https://github.com/jjshdbndg/MotrixLab-MicroDuck.git
+cd MotrixLab-MicroDuck
 git lfs pull
-```
-
-### 安装依赖
-
-安装全部依赖：
-
-```bash
-uv sync --all-packages --all-extras
-```
-
-SKRL 框架支持 JAX(Flax)或 PyTorch 作为训练后端，您也可以根据自己的设备环境，选择只安装其中一种训练后端：
-
-安装 JAX 作为训练后端（仅支持 Linux 平台）：
-
-```bash
-uv sync --all-packages --extra skrl-jax
-```
-
-安装 PyTorch 作为训练后端：
-
-```bash
-uv sync --all-packages --extra skrl-torch
-```
-
-安装 RSLRL 框架（仅支持 PyTorch 后端）：
-
-```bash
 uv sync --all-packages --extra rslrl
 ```
 
-## 🎯 使用指南
-
-### 环境可视化
-
-查看环境而不执行训练：
+运行专项测试：
 
 ```bash
-uv run scripts/view.py --env cartpole
+uv run pytest -q test/test_microduck_rollers_env.py \
+  test/test_microduck_rollers_rewards.py \
+  test/test_microduck_rollers_model.py
 ```
 
-### 训练模型
-
-使用 SKRL 框架训练（默认）：
+评估仓库内置模型：
 
 ```bash
-uv run scripts/train.py --env cartpole
+uv run python scripts/eval_microduck_rollers.py \
+  --checkpoint checkpoints/microduck_rollers/balanced_model_11600.pt
 ```
 
-使用 RSLRL 框架训练：
+训练和续训示例请参考 [scripts/resume_microduck_rollers.py](scripts/resume_microduck_rollers.py) 以及 [完整使用说明](MICRODUCK_ROLLERS.zh-CN.md)。
 
-```bash
-uv run scripts/train.py --env cartpole --rllib rslrl
+## 仓库结构
+
+```text
+motrix_envs/   仿真环境与奖励设计
+motrix_rl/     PPO/RSLRL 任务接入
+scripts/       评估与续训入口
+test/          环境、模型和奖励专项测试
+checkpoints/   带说明的示例模型
+docs/          设计方案与实验记录
 ```
 
-训练结果会保存在 `runs/{env-name}/` 目录下。
+## 当前状态
 
-通过 TensorBoard 查看训练数据：
+- ✅ 被动轮场景与交替蹬滑奖励周期已实现
+- ✅ 已提供示例模型、确定性评估和回归测试
+- 🚧 长时轮滑稳定性与训练质量仍在持续迭代
 
-```bash
-uv run tensorboard --logdir runs/{env-name}
-```
+## 与 MotrixLab 的关系
 
-### 模型推理
+本仓库是 [MotrixLab](https://github.com/Motphys/MotrixLab) 的实验扩展，底层使用 [MotrixSim](https://github.com/Motphys/motrixsim-docs)。代码按便于审阅、回移上游和复现实验的方式组织。
 
-```
-uv run scripts/play.py --env cartpole
-```
+## 许可
 
-更多使用方式请参考[用户文档](https://motrixlab.readthedocs.io)
-
-## 📬 联系方式
-
-有问题或建议？欢迎通过以下方式联系我们：
-
--   GitHub Issues: [提交问题](https://github.com/Motphys/MotrixLab/issues)
--   Discussions: [加入讨论](https://github.com/Motphys/MotrixLab/discussions)
-
-
-## 引用
-
-如果您在研究中使用了 MotrixLab，请按以下方式引用：
-
-```bibtex
-@software{motrixlab2026,
-  title  = {MotrixLab: A Reinforcement Learning Framework for Robot Simulation},
-  author = {{Motphys Team}},
-  year   = {2026},
-  url    = {https://motrixlab.readthedocs.io/},
-  note   = {Source code available at GitHub - Motphys/MotrixLab: A general-purpose machine learning architecture designed for robot train}
-}
-```
-
-MotrixLab 基于 MotrixSim 构建。如果您的工作也直接使用了 MotrixSim，请同时引用：
-
-```bibtex
-@software{motrixsim2026,
-  title  = {MotrixSim: A Physics Simulation Engine for Robotics and Embodied AI},
-  author = {{Motphys Team}},
-  year   = {2026},
-  url    = {https://motrixsim.readthedocs.io/},
-  note   = {Python binary package}
-}
-```
+Apache-2.0。详细信息见上游项目的 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。
